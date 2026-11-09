@@ -24,6 +24,7 @@ import { JungianChatInterface } from './components/JungianChatInterface';
 import { JournalSidebar } from './components/JournalSidebar';
 import { ImageLightbox } from './components/ImageLightbox';
 import { DreamCalendarView } from './components/DreamCalendarView';
+import { DreamSocialShareModal } from './components/DreamSocialShareModal';
 
 const STORAGE_KEY = 'oneiric_subconscious_dreams_v1';
 
@@ -55,6 +56,7 @@ export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeSymbolQuery, setActiveSymbolQuery] = useState<string>('');
   const [currentView, setCurrentView] = useState<'canvas' | 'calendar'>('canvas');
+  const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false);
   const [lightboxData, setLightboxData] = useState<{ isOpen: boolean; url: string; title: string }>({
     isOpen: false,
     url: '',
@@ -78,7 +80,8 @@ export default function App() {
     manualText: string,
     audioBlob: Blob | null,
     imageSize: '1K' | '2K' | '4K',
-    aspectRatio: string
+    aspectRatio: string,
+    initialTags: string[] = []
   ) => {
     setIsProcessingDream(true);
     setAppError(null);
@@ -177,7 +180,7 @@ export default function App() {
         };
       }
 
-      // Step 4: Construct new dream entry
+      // Step 4: Construct new dream entry with tags
       const initialAssistantMessage: ChatMessage = {
         id: `msg-init-${Date.now()}`,
         role: 'assistant',
@@ -187,11 +190,16 @@ export default function App() {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
 
+      const consolidatedTags = Array.from(
+        new Set([...initialTags, ...(analysis.suggestedTags || [])])
+      );
+
       const newDream: DreamEntry = {
         id: `dream-${Date.now()}`,
         createdAt: new Date().toISOString(),
         transcript: dreamTranscript,
         hasAudio: !!audioBlob,
+        tags: consolidatedTags,
         image: generatedImage,
         analysis,
         chatMessages: [initialAssistantMessage],
@@ -208,6 +216,13 @@ export default function App() {
       setIsProcessingDream(false);
       setProcessingStep('');
     }
+  };
+
+  // Handler: Update tags on an existing dream
+  const handleUpdateDreamTags = (dreamId: string, updatedTags: string[]) => {
+    setDreams((prev) =>
+      prev.map((d) => (d.id === dreamId ? { ...d, tags: updatedTags } : d))
+    );
   };
 
   // Handler: Regenerate Surrealist Artwork in 1K, 2K, or 4K
@@ -477,6 +492,17 @@ export default function App() {
               </span>
             </div>
 
+            {activeDream && (
+              <button
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex items-center gap-1.5 rounded-2xl border border-indigo-500/30 bg-indigo-950/40 px-3.5 py-2 text-xs font-semibold text-indigo-300 hover:bg-indigo-900/50 hover:text-white transition-all shadow-sm"
+                title="Compartir sueño en redes sociales"
+              >
+                <Share2 className="h-3.5 w-3.5 text-indigo-400" />
+                <span className="hidden sm:inline">Compartir</span>
+              </button>
+            )}
+
             <button
               onClick={() => setIsRecorderOpen(true)}
               className="flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-indigo-950/60 hover:from-indigo-500 hover:to-purple-500 transition-all hover:scale-105 active:scale-95"
@@ -550,6 +576,7 @@ export default function App() {
                     onOpenLightbox={(url, title) =>
                       setLightboxData({ isOpen: true, url, title })
                     }
+                    onOpenShare={() => setIsShareModalOpen(true)}
                   />
                 </section>
 
@@ -558,6 +585,7 @@ export default function App() {
                   <PsychologicalInterpretation
                     dream={activeDream}
                     onAskAboutSymbol={handleAskAboutSymbol}
+                    onUpdateTags={handleUpdateDreamTags}
                   />
                 </section>
 
@@ -631,6 +659,15 @@ export default function App() {
         title={lightboxData.title}
         onClose={() => setLightboxData({ isOpen: false, url: '', title: '' })}
       />
+
+      {/* Social Media Share Modal */}
+      {activeDream && (
+        <DreamSocialShareModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          dream={activeDream}
+        />
+      )}
     </div>
   );
 }

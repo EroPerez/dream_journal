@@ -10,6 +10,7 @@ export const SAMPLE_DREAMS: DreamEntry[] = [
     transcript:
       "I woke up in an endless library where the floors were filled with ankle-deep dark water. The water was perfectly still like black glass, reflecting stone archways that stretched into infinite mist. I was holding a heavy bronze birdcage, but instead of a bird, inside was a glowing mechanical pocket watch that ticked backward. Every time it ticked, ripples spread across the water. A tall, faceless figure dressed in a tailored midnight-blue coat stood at the threshold of a spiral staircase leading up into the clouds. He didn't speak with a voice, but I felt him asking: 'Are you ready to surrender the debt of lost hours?' I was terrified of dropping the cage, yet desperately relieved.",
     hasAudio: false,
+    tags: ['#recurring', '#shadow-work', '#water', '#temporal-anxiety'],
     image: {
       url: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1600&q=80',
       size: '2K',
@@ -92,6 +93,7 @@ export const SAMPLE_DREAMS: DreamEntry[] = [
     transcript:
       "Earlier in the night, I dreamed of walking upon a shoreline made entirely of broken black obsidian glass. A giant translucent butterfly with stained-glass wings was resting upon a petrified wooden throne. When it flapped its wings, small sparks of violet lightning lit up the fog, revealing a quiet lighthouse with no keeper.",
     hasAudio: false,
+    tags: ['#lucid', '#metamorphosis', '#healing', '#numinous'],
     image: {
       url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80',
       size: '1K',
@@ -149,6 +151,7 @@ export const SAMPLE_DREAMS: DreamEntry[] = [
     transcript:
       "I was wandering through an orchard where the trees grew giant keys made of heavy amber and blown glass instead of fruit. In the center of the grove, a silver wolf with human green eyes was guarding a dormant stone furnace. She looked at me without aggression and nudged an emerald key into my palm with her nose. When I looked closely at the key, I saw my own reflection crying tears that turned into tiny pearls.",
     hasAudio: false,
+    tags: ['#alchemical', '#animal-guide', '#healing', '#lucid'],
     image: {
       url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1600&q=80',
       size: '4K',
@@ -215,6 +218,7 @@ export const SAMPLE_DREAMS: DreamEntry[] = [
     transcript:
       "I was attending a lavish masked ball inside a ballroom carved out of solid ice. Everyone wore identical porcelain masks representing peaceful smiling faces, but their actual hands underneath their gloves were made of dried autumn leaves. A woman whose gown was woven from living ivy took my hand and whispered: 'Take off your mask before the sun warms the chandeliers.' When I reached to unfasten my mask, it had grown warm flesh and nerve endings.",
     hasAudio: false,
+    tags: ['#nightmare', '#persona', '#social', '#frozen'],
     image: {
       url: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1600&q=80',
       size: '2K',
@@ -272,6 +276,7 @@ export const SAMPLE_DREAMS: DreamEntry[] = [
     transcript:
       "I was standing atop a colossal telescope made of brass and bone in the middle of a red desert. An elder astronomer with a beard of spun starlight handed me a lens crafted from pure honey. Looking through it, instead of constellations, I saw every house I have ever lived in stacked on top of one another like a spiraling tower, each room glowing with the voice of someone I once loved.",
     hasAudio: false,
+    tags: ['#ancestral', '#numinous', '#wise-elder', '#cosmic'],
     image: {
       url: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=1600&q=80',
       size: '2K',
@@ -324,6 +329,7 @@ export const SAMPLE_DREAMS: DreamEntry[] = [
     transcript:
       "I was running through a labyrinth made of mirrored hedges. Every time I turned a corner, a jester dressed in checkerboard velvet offered me a pair of scissors to cut my own shadow off. When I finally stopped running, the shadow turned out to be a frightened black panther cub shivering in the cold.",
     hasAudio: false,
+    tags: ['#trickster', '#labyrinth', '#shadow-work', '#recurring'],
     image: {
       url: 'https://images.unsplash.com/photo-1500485035595-cbe6f645feb1?auto=format&fit=crop&w=1600&q=80',
       size: '2K',

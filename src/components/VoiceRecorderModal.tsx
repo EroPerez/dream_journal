@@ -12,12 +12,20 @@ import {
   Sliders,
   AlertCircle,
   HelpCircle,
+  Tag,
+  Hash,
 } from 'lucide-react';
 
 interface VoiceRecorderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmitDream: (dreamText: string, audioBlob: Blob | null, imageSize: '1K' | '2K' | '4K', aspectRatio: string) => Promise<void>;
+  onSubmitDream: (
+    dreamText: string,
+    audioBlob: Blob | null,
+    imageSize: '1K' | '2K' | '4K',
+    aspectRatio: string,
+    initialTags: string[]
+  ) => Promise<void>;
   isProcessing: boolean;
   processingStep: string;
 }
@@ -41,6 +49,8 @@ export const VoiceRecorderModal: React.FC<VoiceRecorderModalProps> = ({
   const [selectedAspect, setSelectedAspect] = useState<string>('1:1');
   const [audioLevel, setAudioLevel] = useState<number>(0);
   const [micError, setMicError] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [customTagInput, setCustomTagInput] = useState('');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -206,7 +216,7 @@ export const VoiceRecorderModal: React.FC<VoiceRecorderModalProps> = ({
       return;
     }
 
-    await onSubmitDream(manualText, audioBlob, selectedSize, selectedAspect);
+    await onSubmitDream(manualText, audioBlob, selectedSize, selectedAspect, selectedTags);
   };
 
   const loadPromptSnippet = (text: string) => {
@@ -415,8 +425,53 @@ export const VoiceRecorderModal: React.FC<VoiceRecorderModalProps> = ({
             </div>
           )}
 
-          {/* Surrealist Image Generation Affordances (1K, 2K, 4K) */}
+          {/* Dream Category Tags Picker */}
           <div className="mt-5 pt-4 border-t border-slate-800/80">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+                <Tag className="h-3.5 w-3.5 text-purple-400" />
+                Categorize Dream (Emotions & States)
+              </label>
+              <span className="text-[11px] text-slate-400">Tap to toggle tags</span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              {[
+                '#lucid',
+                '#nightmare',
+                '#recurring',
+                '#flying',
+                '#water',
+                '#shadow-work',
+                '#healing',
+                '#prophetic',
+                '#numinous',
+              ].map((tag) => {
+                const isSelected = selectedTags.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() =>
+                      setSelectedTags((prev) =>
+                        isSelected ? prev.filter((t) => t !== tag) : [...prev, tag]
+                      )
+                    }
+                    className={`rounded-lg px-2.5 py-1 text-xs font-semibold border transition-all ${
+                      isSelected
+                        ? 'border-purple-400 bg-purple-950 text-purple-200 shadow-sm'
+                        : 'border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Surrealist Image Generation Affordances (1K, 2K, 4K) */}
+          <div className="mt-4 pt-4 border-t border-slate-800/80">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-semibold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
                 <Sliders className="h-3.5 w-3.5" />

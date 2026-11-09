@@ -10,6 +10,8 @@ import {
   X,
   Compass,
   Filter,
+  Tag,
+  Hash,
 } from 'lucide-react';
 import { DreamEntry } from '../types';
 
@@ -42,6 +44,8 @@ export const JournalSidebar: React.FC<JournalSidebarProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArchetypeFilter, setSelectedArchetypeFilter] = useState<string>('ALL');
+  const [selectedTagFilter, setSelectedTagFilter] = useState<string>('ALL');
+  const [filterMode, setFilterMode] = useState<'archetypes' | 'tags'>('tags');
 
   // Extract all unique archetype names across dreams
   const allArchetypes = Array.from(
@@ -50,19 +54,35 @@ export const JournalSidebar: React.FC<JournalSidebarProps> = ({
     )
   );
 
+  // Extract all unique tags and their frequency counts
+  const tagCounts = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const d of dreams) {
+      for (const t of d.tags || []) {
+        counts[t] = (counts[t] || 0) + 1;
+      }
+    }
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [dreams]);
+
   const filteredDreams = dreams.filter((dream) => {
     const matchesSearch =
       searchQuery === '' ||
       dream.analysis?.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       dream.transcript.toLowerCase().includes(searchQuery.toLowerCase()) ||
       dream.analysis?.emotionalCore.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      dream.analysis?.symbols.some((s) => s.symbol.toLowerCase().includes(searchQuery.toLowerCase()));
+      dream.analysis?.symbols.some((s) => s.symbol.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (dream.tags && dream.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())));
 
     const matchesArchetype =
       selectedArchetypeFilter === 'ALL' ||
       dream.analysis?.archetypes.some((a) => a.name === selectedArchetypeFilter);
 
-    return matchesSearch && matchesArchetype;
+    const matchesTag =
+      selectedTagFilter === 'ALL' ||
+      (dream.tags && dream.tags.includes(selectedTagFilter));
+
+    return matchesSearch && matchesArchetype && matchesTag;
   });
 
   return (
@@ -134,25 +154,100 @@ export const JournalSidebar: React.FC<JournalSidebarProps> = ({
         </div>
 
         {/* Search & Filter */}
-        <div className="p-4 space-y-2 border-b border-slate-800/60">
+        <div className="p-4 space-y-2.5 border-b border-slate-800/60">
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search symbols, emotions, themes..."
+              placeholder="Search symbols, emotions, tags..."
               className="w-full rounded-xl border border-slate-800 bg-slate-900/80 pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-colors"
             />
           </div>
 
-          {allArchetypes.length > 0 && (
+          {/* Filter Mode Selector: Tags vs Archetypes */}
+          <div className="flex items-center justify-between pt-1">
+            <div className="flex rounded-lg border border-slate-800 bg-slate-900/70 p-0.5 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setFilterMode('tags')}
+                className={`flex items-center gap-1 rounded-md px-2 py-0.5 font-medium transition-colors ${
+                  filterMode === 'tags'
+                    ? 'bg-purple-600 text-white'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Hash className="h-3 w-3" />
+                <span>Tags ({tagCounts.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterMode('archetypes')}
+                className={`flex items-center gap-1 rounded-md px-2 py-0.5 font-medium transition-colors ${
+                  filterMode === 'archetypes'
+                    ? 'bg-indigo-600 text-white'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Compass className="h-3 w-3" />
+                <span>Archetypes</span>
+              </button>
+            </div>
+
+            {(selectedTagFilter !== 'ALL' || selectedArchetypeFilter !== 'ALL' || searchQuery) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedTagFilter('ALL');
+                  setSelectedArchetypeFilter('ALL');
+                  setSearchQuery('');
+                }}
+                className="text-[10px] text-indigo-400 hover:underline"
+              >
+                Reset All
+              </button>
+            )}
+          </div>
+
+          {/* Tag Filter Chips Carousel */}
+          {filterMode === 'tags' && (
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 text-[11px]">
+              <button
+                onClick={() => setSelectedTagFilter('ALL')}
+                className={`rounded-lg px-2.5 py-1 font-medium transition-colors shrink-0 ${
+                  selectedTagFilter === 'ALL'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
+                }`}
+              >
+                All Tags
+              </button>
+              {tagCounts.map(([tag, count]) => (
+                <button
+                  key={tag}
+                  onClick={() => setSelectedTagFilter(selectedTagFilter === tag ? 'ALL' : tag)}
+                  className={`shrink-0 flex items-center gap-1 rounded-lg px-2 py-1 font-medium transition-colors border ${
+                    selectedTagFilter === tag
+                      ? 'border-purple-500 bg-purple-950/80 text-purple-200 ring-1 ring-purple-400/50'
+                      : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-700 hover:text-white'
+                  }`}
+                >
+                  <span>{tag}</span>
+                  <span className="text-[10px] text-slate-400 font-mono">({count})</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Archetypes Filter Chips Carousel */}
+          {filterMode === 'archetypes' && allArchetypes.length > 0 && (
             <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 text-[11px]">
               <button
                 onClick={() => setSelectedArchetypeFilter('ALL')}
-                className={`rounded-lg px-2.5 py-1 font-medium transition-colors ${
+                className={`rounded-lg px-2.5 py-1 font-medium transition-colors shrink-0 ${
                   selectedArchetypeFilter === 'ALL'
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-indigo-600 text-white shadow-sm'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
                 }`}
               >
@@ -161,7 +256,7 @@ export const JournalSidebar: React.FC<JournalSidebarProps> = ({
               {allArchetypes.map((arch) => (
                 <button
                   key={arch}
-                  onClick={() => setSelectedArchetypeFilter(arch)}
+                  onClick={() => setSelectedArchetypeFilter(selectedArchetypeFilter === arch ? 'ALL' : arch)}
                   className={`shrink-0 rounded-lg px-2.5 py-1 font-medium transition-colors ${
                     selectedArchetypeFilter === arch
                       ? 'bg-indigo-600 text-white'
@@ -227,10 +322,33 @@ export const JournalSidebar: React.FC<JournalSidebarProps> = ({
                       <Calendar className="h-3 w-3" />
                       <span>{new Date(dream.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                       <span>•</span>
-                      <span className="truncate max-w-[100px]">
+                      <span className="truncate max-w-[90px]">
                         {dream.analysis?.archetypes?.[0]?.name || 'Archetypal'}
                       </span>
                     </div>
+
+                    {/* Tag badges */}
+                    {dream.tags && dream.tags.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                        {dream.tags.slice(0, 2).map((t) => (
+                          <span
+                            key={t}
+                            className={`rounded px-1.5 py-0.5 text-[9px] font-semibold border ${
+                              selectedTagFilter === t
+                                ? 'border-purple-400 bg-purple-900/80 text-white'
+                                : 'border-purple-500/20 bg-purple-950/40 text-purple-300'
+                            }`}
+                          >
+                            {t}
+                          </span>
+                        ))}
+                        {dream.tags.length > 2 && (
+                          <span className="text-[9px] text-slate-400 font-mono">
+                            +{dream.tags.length - 2}
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     <p className="mt-1 text-[11px] text-slate-400 line-clamp-1 italic">
                       "{dream.transcript}"

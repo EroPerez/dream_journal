@@ -8,6 +8,7 @@ import {
   Info,
   Check,
   Eye,
+  Share2,
 } from 'lucide-react';
 import { DreamEntry } from '../types';
 
@@ -16,6 +17,7 @@ interface SurrealistArtViewerProps {
   onRegenerateImage: (size: '1K' | '2K' | '4K', aspectRatio: string) => Promise<void>;
   isGenerating: boolean;
   onOpenLightbox: (imageUrl: string, title: string) => void;
+  onOpenShare?: () => void;
 }
 
 export const SurrealistArtViewer: React.FC<SurrealistArtViewerProps> = ({
@@ -23,6 +25,7 @@ export const SurrealistArtViewer: React.FC<SurrealistArtViewerProps> = ({
   onRegenerateImage,
   isGenerating,
   onOpenLightbox,
+  onOpenShare,
 }) => {
   const [showPromptInfo, setShowPromptInfo] = useState(false);
   const [selectedSize, setSelectedSize] = useState<'1K' | '2K' | '4K'>(
@@ -74,6 +77,18 @@ export const SurrealistArtViewer: React.FC<SurrealistArtViewerProps> = ({
             <Sparkles className="h-3 w-3 text-indigo-400" />
             {dream.image?.size || selectedSize} Resolution
           </span>
+
+          {/* Share to social button */}
+          {onOpenShare && (
+            <button
+              onClick={onOpenShare}
+              className="flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-950/60 px-2.5 py-1 text-xs font-semibold text-indigo-300 hover:bg-indigo-900/60 hover:text-white transition-colors"
+              title="Compartir en Redes Sociales"
+            >
+              <Share2 className="h-3.5 w-3.5 text-indigo-400" />
+              <span className="hidden sm:inline">Compartir</span>
+            </button>
+          )}
 
           {/* Lightbox button */}
           {dream.image?.url && (

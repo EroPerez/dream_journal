@@ -14,20 +14,27 @@ import {
   Shield,
   Layers,
   HelpCircle,
+  Tag,
+  Plus,
+  X,
 } from 'lucide-react';
 import { DreamEntry, DreamSymbol, DreamArchetype } from '../types';
 
 interface PsychologicalInterpretationProps {
   dream: DreamEntry;
   onAskAboutSymbol: (symbol: string, question?: string) => void;
+  onUpdateTags?: (dreamId: string, tags: string[]) => void;
 }
 
 export const PsychologicalInterpretation: React.FC<PsychologicalInterpretationProps> = ({
   dream,
   onAskAboutSymbol,
+  onUpdateTags,
 }) => {
   const [showFullTranscript, setShowFullTranscript] = useState(false);
   const [copiedTranscript, setCopiedTranscript] = useState(false);
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const [newTagInput, setNewTagInput] = useState('');
 
   const analysis = dream.analysis;
   if (!analysis) return null;
@@ -48,6 +55,39 @@ export const PsychologicalInterpretation: React.FC<PsychologicalInterpretationPr
     if (lower.includes('trickster')) return 'border-rose-500/40 bg-rose-950/30 text-rose-300';
     return 'border-indigo-500/40 bg-indigo-950/30 text-indigo-300';
   };
+
+  const currentTags = dream.tags || [];
+
+  const handleAddTag = (rawTag: string) => {
+    let clean = rawTag.trim().toLowerCase();
+    if (!clean) return;
+    if (!clean.startsWith('#')) clean = `#${clean}`;
+    clean = clean.replace(/[^a-z0-9#-_]/g, '');
+    if (clean.length <= 1) return;
+    if (currentTags.includes(clean)) return;
+
+    const updated = [...currentTags, clean];
+    onUpdateTags?.(dream.id, updated);
+    setNewTagInput('');
+    setIsAddingTag(false);
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    const updated = currentTags.filter((t) => t !== tagToRemove);
+    onUpdateTags?.(dream.id, updated);
+  };
+
+  const PRESET_TAG_SUGGESTIONS = [
+    '#lucid',
+    '#nightmare',
+    '#recurring',
+    '#shadow-work',
+    '#flying',
+    '#water',
+    '#alchemical',
+    '#healing',
+    '#numinous',
+  ];
 
   return (
     <div className="space-y-8">
@@ -84,6 +124,116 @@ export const PsychologicalInterpretation: React.FC<PsychologicalInterpretationPr
                   {analysis.emotionalCore}
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Dream Category Tags & Hashtags */}
+          <div className="rounded-2xl border border-slate-800/80 bg-slate-950/40 p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
+                <Tag className="h-3.5 w-3.5 text-indigo-400" />
+                Dream Tags & Categories
+              </span>
+              <span className="text-[11px] text-slate-400">
+                Filter by emotion, state, or recurring motifs
+              </span>
+            </div>
+
+            {/* Current Tags */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {currentTags.map((t) => (
+                <span
+                  key={t}
+                  className="group flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-950/50 px-2.5 py-1 text-xs font-semibold text-indigo-200"
+                >
+                  <span>{t}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveTag(t)}
+                    className="text-slate-400 hover:text-red-300 transition-colors"
+                    title={`Remove ${t}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+
+              {isAddingTag ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleAddTag(newTagInput);
+                  }}
+                  className="flex items-center gap-1"
+                >
+                  <input
+                    type="text"
+                    autoFocus
+                    value={newTagInput}
+                    onChange={(e) => setNewTagInput(e.target.value)}
+                    placeholder="#tag"
+                    className="w-28 rounded-lg border border-indigo-500/50 bg-slate-900 px-2.5 py-0.5 text-xs text-white focus:outline-none"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') setIsAddingTag(false);
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    className="rounded-lg bg-indigo-600 px-2 py-0.5 text-xs text-white hover:bg-indigo-500"
+                  >
+                    Add
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingTag(false)}
+                    className="rounded-lg border border-slate-700 px-2 py-0.5 text-xs text-slate-400 hover:text-white"
+                  >
+                    ✕
+                  </button>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsAddingTag(true)}
+                  className="flex items-center gap-1 rounded-lg border border-dashed border-slate-700 bg-slate-900/40 px-2.5 py-1 text-xs text-slate-400 hover:border-indigo-500/50 hover:text-indigo-300 transition-colors"
+                >
+                  <Plus className="h-3 w-3" />
+                  <span>Add Tag</span>
+                </button>
+              )}
+            </div>
+
+            {/* Quick preset suggestions */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-900/60">
+              <span className="text-[10px] uppercase font-bold text-slate-400 shrink-0">
+                Quick Add:
+              </span>
+              {PRESET_TAG_SUGGESTIONS.filter((p) => !currentTags.includes(p))
+                .slice(0, 6)
+                .map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => handleAddTag(preset)}
+                    className="rounded-md border border-slate-800 bg-slate-900/40 px-2 py-0.5 text-[11px] text-slate-400 hover:border-indigo-500/40 hover:text-indigo-200 transition-colors"
+                  >
+                    + {preset}
+                  </button>
+                ))}
+              {analysis.suggestedTags &&
+                analysis.suggestedTags
+                  .filter((st) => !currentTags.includes(st))
+                  .slice(0, 3)
+                  .map((st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => handleAddTag(st)}
+                      className="rounded-md border border-purple-500/30 bg-purple-950/30 px-2 py-0.5 text-[11px] text-purple-300 hover:border-purple-400 hover:text-white transition-colors"
+                    >
+                      ✨ {st}
+                    </button>
+                  ))}
             </div>
           </div>
 

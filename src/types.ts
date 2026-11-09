@@ -20,6 +20,7 @@ export interface DreamAnalysis {
   integrationPractice: string;
   surrealistArtPrompt: string;
   suggestedQuestions: string[];
+  suggestedTags?: string[];
 }
 
 export interface ChatMessage {
@@ -35,6 +36,7 @@ export interface DreamEntry {
   transcript: string;
   hasAudio: boolean;
   audioBlobUrl?: string;
+  tags?: string[];
   image?: {
     url: string;
     size: '1K' | '2K' | '4K';

@@ -92,7 +92,8 @@ Extract:
 6. A deep Jungian synthesis explaining what the unconscious is trying to communicate to the waking ego.
 7. An actionable integration ritual or journaling practice for the dreamer.
 8. A high-concept, vivid surrealist visual art prompt in the style of René Magritte, Salvador Dalí, and Giorgio de Chirico, translating the dream's core emotional theme into a striking surrealist masterpiece.
-9. 4 provocative follow-up questions the dreamer might want to ask you about specific symbols.`,
+9. 4 provocative follow-up questions the dreamer might want to ask you about specific symbols.
+10. 3 to 5 lowercase hashtag categories for this dream (e.g., #lucid, #nightmare, #recurring, #shadow-work, #water, #flying, #transformation).`,
         responseMimeType: 'application/json',
         responseSchema: {
           type: Type.OBJECT,
@@ -132,6 +133,11 @@ Extract:
               items: { type: Type.STRING },
               description: '4 insightful follow-up questions for the dream analyst chat',
             },
+            suggestedTags: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: '3 to 5 lowercase hashtag categories e.g. #lucid, #recurring, #shadow-work',
+            },
           },
           required: [
             'title',
@@ -143,6 +149,7 @@ Extract:
             'integrationPractice',
             'surrealistArtPrompt',
             'suggestedQuestions',
+            'suggestedTags',
           ],
         },
       },
@@ -257,6 +264,38 @@ ${dreamContext ? JSON.stringify(dreamContext, null, 2) : 'No specific dream prov
     console.error('Chat error:', error);
     res.status(500).json({
       error: error?.message || 'Failed to process chat message.',
+    });
+  }
+});
+
+// Endpoint: Generate optimized social media post using gemini-3.8-flash
+app.post('/api/generate-social-post', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { dream, platform = 'twitter', tone = 'poetic', language = 'auto' } = req.body;
+    if (!dream) {
+      res.status(400).json({ error: 'Dream data is required' });
+      return;
+    }
+
+    const platformGuides: Record<string, string> = {
+      twitter: 'Concise, magnetic Twitter/X post under 280 characters with an evocative opening, key dream symbol or quote, and 3-4 trending hashtags (#Oneiric #CarlJung #LucidDreaming #Surrealism).',
+      instagram: 'Engaging Instagram caption with a poetic hook, vivid sensory description of the dream, Jungian psychological reflection, interactive question for followers ("Have you ever had a dream like this?"), and aesthetic hashtags.',
+      whatsapp: 'Personal, thoughtful WhatsApp / Telegram message sharing a bizarre and beautiful dream with close friends, including an insightful Jungian takeaway and clean formatting.',
+      linkedin: 'Reflective, intellectual thought-leadership post analyzing subconscious creativity, archetypal problem-solving, and how dream integration fuels conscious waking innovation and psychological maturity.',
+    };
+
+    const guide = platformGuides[platform] || platformGuides.twitter;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: `Create an exceptional, ready-to-publish social media post for the following dream:\n\nTitle: "${dream.analysis?.title || 'Waking Dream'}"\nTranscript: "${dream.transcript}"\nEmotional Core: "${dream.analysis?.emotionalCore || ''}"\nKey Archetypes: ${JSON.stringify(dream.analysis?.archetypes?.map((a: any) => a.name) || [])}\nAtmosphere: "${dream.analysis?.atmosphere || ''}"\n\nPlatform Target: ${platform} (${guide})\nTone: ${tone} (e.g. poetic, analytical, mysterious, reflective)\nLanguage: ${language === 'auto' ? 'Match the language of the user or dream text (Spanish or English)' : language}. Return ONLY the ready-to-copy post text without conversational filler.`,
+    });
+
+    res.json({ postText: response.text || '' });
+  } catch (error: any) {
+    console.error('Social post generation error:', error);
+    res.status(500).json({
+      error: error?.message || 'Failed to generate social media post.',
     });
   }
 });
