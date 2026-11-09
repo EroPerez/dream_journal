@@ -1,0 +1,6 @@
+{
+  "name": "Oneiric — Multimodal Surrealist Dream Journal",
+  "description": "Capture fresh dreams via voice recording, transcribe sleep memories, generate surrealist imagery in 1K/2K/4K, explore Jungian archetypal analysis, and explore subconscious symbols in multi-turn chat.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
