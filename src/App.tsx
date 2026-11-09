@@ -12,6 +12,7 @@ import {
   Volume2,
   ShieldCheck,
   Share2,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 
 import { DreamEntry, ChatMessage } from './types';
@@ -22,6 +23,7 @@ import { PsychologicalInterpretation } from './components/PsychologicalInterpret
 import { JungianChatInterface } from './components/JungianChatInterface';
 import { JournalSidebar } from './components/JournalSidebar';
 import { ImageLightbox } from './components/ImageLightbox';
+import { DreamCalendarView } from './components/DreamCalendarView';
 
 const STORAGE_KEY = 'oneiric_subconscious_dreams_v1';
 
@@ -52,6 +54,7 @@ export default function App() {
   const [isSendingChat, setIsSendingChat] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeSymbolQuery, setActiveSymbolQuery] = useState<string>('');
+  const [currentView, setCurrentView] = useState<'canvas' | 'calendar'>('canvas');
   const [lightboxData, setLightboxData] = useState<{ isOpen: boolean; url: string; title: string }>({
     isOpen: false,
     url: '',
@@ -407,15 +410,67 @@ export default function App() {
                 </p>
               </div>
             </div>
+
+            {/* View Switcher Tabs */}
+            <div className="hidden lg:flex items-center ml-4 rounded-xl border border-slate-800 bg-slate-900/60 p-1">
+              <button
+                onClick={() => setCurrentView('canvas')}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                  currentView === 'canvas'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>Studio Canvas</span>
+              </button>
+              <button
+                onClick={() => setCurrentView('calendar')}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+                  currentView === 'calendar'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <CalendarIcon className="h-3.5 w-3.5" />
+                <span>Monthly Calendar</span>
+              </button>
+            </div>
           </div>
 
           {/* Quick Metrics & Actions */}
           <div className="flex items-center gap-3">
+            {/* Mobile View Switcher */}
+            <div className="flex lg:hidden rounded-lg border border-slate-800 bg-slate-900/60 p-1">
+              <button
+                onClick={() => setCurrentView('canvas')}
+                className={`p-1.5 rounded-md text-xs ${
+                  currentView === 'canvas' ? 'bg-indigo-600 text-white' : 'text-slate-400'
+                }`}
+                title="Studio Canvas"
+              >
+                <Sparkles className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setCurrentView('calendar')}
+                className={`p-1.5 rounded-md text-xs ${
+                  currentView === 'calendar' ? 'bg-indigo-600 text-white' : 'text-slate-400'
+                }`}
+                title="Monthly Calendar"
+              >
+                <CalendarIcon className="h-4 w-4" />
+              </button>
+            </div>
+
             <div className="hidden md:flex items-center gap-4 text-xs font-medium text-slate-400 border-r border-slate-800/80 pr-4">
-              <span className="flex items-center gap-1.5">
-                <BookMarked className="h-3.5 w-3.5 text-indigo-400" />
+              <button
+                onClick={() => setCurrentView('calendar')}
+                className="flex items-center gap-1.5 hover:text-indigo-300 transition-colors"
+                title="View Calendar Grid"
+              >
+                <CalendarIcon className="h-3.5 w-3.5 text-indigo-400" />
                 <strong className="text-slate-200">{dreams.length}</strong> Dreams
-              </span>
+              </button>
               <span className="flex items-center gap-1.5">
                 <Layers className="h-3.5 w-3.5 text-purple-400" />
                 <strong className="text-slate-200">{totalArchetypes}</strong> Archetypes
@@ -442,11 +497,16 @@ export default function App() {
           onClose={() => setIsSidebarOpen(false)}
           dreams={dreams}
           selectedDreamId={selectedDreamId}
-          onSelectDream={(id) => setSelectedDreamId(id)}
+          onSelectDream={(id) => {
+            setSelectedDreamId(id);
+            setCurrentView('canvas');
+          }}
           onNewDreamClick={() => setIsRecorderOpen(true)}
           onDeleteDream={handleDeleteDream}
           onExportJournal={handleExportJournal}
           onLoadSamples={handleLoadSamples}
+          onOpenCalendar={() => setCurrentView('calendar')}
+          activeView={currentView}
         />
 
         {/* Content Area */}
@@ -468,7 +528,18 @@ export default function App() {
               </div>
             )}
 
-            {activeDream ? (
+            {currentView === 'calendar' ? (
+              <DreamCalendarView
+                dreams={dreams}
+                selectedDreamId={selectedDreamId}
+                onSelectDream={(id) => {
+                  setSelectedDreamId(id);
+                }}
+                onRecordDream={() => setIsRecorderOpen(true)}
+                onOpenCanvasView={() => setCurrentView('canvas')}
+                onLoadSamples={handleLoadSamples}
+              />
+            ) : activeDream ? (
               <>
                 {/* 1. Surrealist Vision Image Display (gemini-3-pro-image-preview with 1K, 2K, 4K affordance) */}
                 <section>

@@ -23,6 +23,8 @@ interface JournalSidebarProps {
   onDeleteDream: (id: string) => void;
   onExportJournal: () => void;
   onLoadSamples: () => void;
+  onOpenCalendar: () => void;
+  activeView: 'canvas' | 'calendar';
 }
 
 export const JournalSidebar: React.FC<JournalSidebarProps> = ({
@@ -35,6 +37,8 @@ export const JournalSidebar: React.FC<JournalSidebarProps> = ({
   onDeleteDream,
   onExportJournal,
   onLoadSamples,
+  onOpenCalendar,
+  activeView,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArchetypeFilter, setSelectedArchetypeFilter] = useState<string>('ALL');
@@ -100,17 +104,32 @@ export const JournalSidebar: React.FC<JournalSidebarProps> = ({
           </button>
         </div>
 
-        {/* Action Button: Record New Dream */}
-        <div className="p-4 border-b border-slate-800/60">
+        {/* Action Button: Record New Dream & View Calendar */}
+        <div className="p-4 border-b border-slate-800/60 space-y-2">
           <button
             onClick={() => {
               onNewDreamClick();
               if (window.innerWidth < 1024) onClose();
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-3 text-xs font-semibold text-white shadow-lg shadow-indigo-950/50 hover:from-indigo-500 hover:to-purple-500 transition-all"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-2.5 text-xs font-semibold text-white shadow-lg shadow-indigo-950/50 hover:from-indigo-500 hover:to-purple-500 transition-all"
           >
             <Plus className="h-4 w-4" />
             <span>Record Fresh Dream</span>
+          </button>
+
+          <button
+            onClick={() => {
+              onOpenCalendar();
+              if (window.innerWidth < 1024) onClose();
+            }}
+            className={`flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-semibold border transition-all ${
+              activeView === 'calendar'
+                ? 'bg-indigo-950/80 border-indigo-400 text-indigo-100 shadow-md shadow-indigo-950/40'
+                : 'border-slate-800 bg-slate-900/40 text-slate-300 hover:border-slate-700 hover:bg-slate-900/70'
+            }`}
+          >
+            <Calendar className="h-4 w-4 text-indigo-400" />
+            <span>Monthly Calendar & Heatmap</span>
           </button>
         </div>
 
